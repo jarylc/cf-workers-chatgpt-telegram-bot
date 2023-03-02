@@ -1,4 +1,6 @@
 # cf-workers-chatgpt-telegram-bot
+![Logo](cf-workers-chatgpt-telegram-bot.png)
+
 ## Description
 ![Example](example.png)
 
