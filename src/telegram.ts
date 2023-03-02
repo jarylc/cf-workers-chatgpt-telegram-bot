@@ -37,5 +37,20 @@ export namespace Telegram {
         length: number
         type: string
     }
+
+    export function sendMessage(token: string, chat_id: number, text: string, additional_arguments?: { [key: string]: any }) {
+        return fetch("https://api.telegram.org/bot" + token + "/sendMessage", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                "chat_id": chat_id,
+                "parse_mode": "Markdown",
+                "text": text,
+                ...additional_arguments
+            })
+        });
+    }
 }
 

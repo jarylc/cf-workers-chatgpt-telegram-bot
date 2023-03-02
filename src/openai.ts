@@ -1,3 +1,5 @@
+import Dispatcher from "wrangler";
+
 export namespace OpenAI {
     export interface Response {
         id:      string;
@@ -25,4 +27,17 @@ export namespace OpenAI {
         total_tokens:      number;
     }
 
+    export function complete(api_key: string, model: string, context: Message[]) {
+        return fetch("https://api.openai.com/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + api_key,
+            },
+            body: JSON.stringify({
+                "model": model ? model : "gpt-3.5-turbo",
+                "messages": context
+            })
+        })
+    }
 }
