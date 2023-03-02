@@ -1,0 +1,22 @@
+# cf-workers-chatgpt-telegram-bot
+## Description
+![Example](example.png)
+
+Serverless Telegram bot to quickly interface with [OpenAI's Chat Completion API](https://platform.openai.com/docs/guides/chat)
+
+Currently only usable via 1:1 chat with the bot, group chats are unfortunately not supported.
+
+## Prerequisites
+- A Cloudflare account with Workers enabled
+- The Telegram bot token of a bot created on Telegram via [@BotFather](https://t.me/BotFather)
+- An OpenAI API key that has the ability to use the Chat Completion API
+
+## Getting Started
+### Wrangler
+1. Clone this repository
+2. Run `wrangler secret put TELEGRAM_BOT_TOKEN` and set the Telegram bot token
+3. Run `wrangler secret put OPENAI_API_KEY` and set the OpenAI API key
+4. Add space-delimited usernames to whitelist in `TELEGRAM_USERNAME_WHITELIST` in wrangler.toml
+5. (Optional) To allow extra lines of context, run `wrangler kv:namespace create kv` and replace the ID of `CHATGPT_TELEGRAM_BOT_KV` and increase `CONTEXT` to more than 0 in wrangler.toml (will consume a lot more tokens)
+6. (Optional) To change the model, update `CHATGPT_MODEL` in wrangler.toml to whatever you want as documented at https://platform.openai.com/docs/api-reference/chat/create#chat/create-model
+7. Run `wrangler publish` to deploy to Cloudflare Workers

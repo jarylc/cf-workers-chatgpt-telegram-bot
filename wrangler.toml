@@ -1,0 +1,12 @@
+name = "cf-workers-chatgpt-telegram-bot"
+main = "src/index.ts"
+compatibility_date = "2023-03-02"
+
+kv_namespaces = [
+    { binding = "CHATGPT_TELEGRAM_BOT_KV", id = "6a7ab1c53230452382b69cf98493cf18" }
+]
+
+[vars]
+TELEGRAM_USERNAME_WHITELIST = "jarylc"
+CHATGPT_MODEL = "gpt-3.5-turbo-0301"
+CONTEXT = 0
