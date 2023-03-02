@@ -50,7 +50,11 @@ export default {
 				if (env.CONTEXT && env.CONTEXT > 0 && env.CHATGPT_TELEGRAM_BOT_KV) {
 					await Cloudflare.putKVChatContext(env.CHATGPT_TELEGRAM_BOT_KV, String(update.message.chat.id), [])
 				}
-				await Telegram.sendMessage(env.TELEGRAM_BOT_TOKEN, update.message.chat.id, "Context for the current chat (if it existed) has been cleared.")
+				await Telegram.sendMessage(env.TELEGRAM_BOT_TOKEN, update.message.chat.id, "Context for the current chat (if it existed) has been cleared.", {
+					"reply_markup": {
+						"remove_keyboard": true,
+					}
+				})
 				return new Response(null)
 			}
 
@@ -65,7 +69,12 @@ export default {
 
 			// message starts with /context
 			if (update.message.text.startsWith("/context")) {
-				await Telegram.sendMessage(env.TELEGRAM_BOT_TOKEN, update.message.chat.id, JSON.stringify(context))
+				if (context.length > 0) {
+					await Telegram.sendMessage(env.TELEGRAM_BOT_TOKEN, update.message.chat.id, JSON.stringify(context))
+				} else {
+					await Telegram.sendMessage(env.TELEGRAM_BOT_TOKEN, update.message.chat.id, "Context is empty or not available.")
+				}
+
 				return new Response(null)
 			}
 
@@ -79,7 +88,12 @@ export default {
 
 			// reply in Telegram
 			const content = json.choices[0].message.content
-			await Telegram.sendMessage(env.TELEGRAM_BOT_TOKEN, update.message.chat.id, json.choices[0].message.content)
+			await Telegram.sendMessage(env.TELEGRAM_BOT_TOKEN, update.message.chat.id, json.choices[0].message.content, {
+				"reply_to_message_id": update.message.message_id,
+				"reply_markup": {
+					"remove_keyboard": true,
+				}
+			})
 
 			// add reply to context
 			if (env.CONTEXT && env.CONTEXT > 0 && env.CHATGPT_TELEGRAM_BOT_KV) {
