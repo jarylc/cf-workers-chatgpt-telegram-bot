@@ -16,96 +16,88 @@ export default {
 		request: Request,
 		env: Env,
 	): Promise<Response> {
-		if (request.url.includes(env.TELEGRAM_BOT_TOKEN)) {
-			const update: Telegram.Update = await request.json()
-			console.log(JSON.stringify(update))
-
-			// update is not a message
-			if (!("message" in update) || !("text" in update.message)) {
-				return new Response(null) // no action
-			}
-
-			// user is not in whitelist
-			if (env.TELEGRAM_USERNAME_WHITELIST && !env.TELEGRAM_USERNAME_WHITELIST.split(" ").includes(String(update.message.from.username))) {
-				await Telegram.sendMessage(env.TELEGRAM_BOT_TOKEN, update.message.chat.id, "You are not whitelisted!")
-				return new Response(null)
-			}
-
-			// message starts with /start or /chatgpt
-			if (update.message.text.startsWith("/start") || update.message.text.startsWith("/chatgpt")) {
-				await Telegram.sendMessage(env.TELEGRAM_BOT_TOKEN, update.message.chat.id, "Hi @"+ update.message.from.username+"! I'm a chatbot powered by OpenAI! Reply your query to this message!",
-					{
-						"reply_markup": {
-							"force_reply": true,
-							"input_field_placeholder": "Ask me anything!",
-							"selective": true,
-						}
-					}
-				)
-				return new Response(null)
-			}
-
-			// message starts with /clear
-			if (update.message.text.startsWith("/clear")) {
-				if (env.CONTEXT && env.CONTEXT > 0 && env.CHATGPT_TELEGRAM_BOT_KV) {
-					await Cloudflare.putKVChatContext(env.CHATGPT_TELEGRAM_BOT_KV, String(update.message.chat.id), [])
-				}
-				await Telegram.sendMessage(env.TELEGRAM_BOT_TOKEN, update.message.chat.id, "Context for the current chat (if it existed) has been cleared.", {
-					"reply_markup": {
-						"remove_keyboard": true,
-					}
-				})
-				return new Response(null)
-			}
-
-			// retrieve context and truncate to a maximum of (env.CONTEXT * 2)
-			let context: OpenAI.Message[] = []
-			if (env.CONTEXT && env.CONTEXT > 0 && env.CHATGPT_TELEGRAM_BOT_KV) {
-				context = await Cloudflare.getKVChatContext(env.CHATGPT_TELEGRAM_BOT_KV, String(update.message.chat.id))
-			}
-			while (context.length > Math.max(1, env.CONTEXT * 2)) {
-				context.shift()
-			}
-
-			// message starts with /context
-			if (update.message.text.startsWith("/context")) {
-				if (context.length > 0) {
-					await Telegram.sendMessage(env.TELEGRAM_BOT_TOKEN, update.message.chat.id, JSON.stringify(context))
-				} else {
-					await Telegram.sendMessage(env.TELEGRAM_BOT_TOKEN, update.message.chat.id, "Context is empty or not available.")
-				}
-
-				return new Response(null)
-			}
-
-			// prepare context
-			context.push({"role": "user", "content": update.message.text})
-
-			// query OpenAPI with context
-			const response = await OpenAI.complete(env.OPENAI_API_KEY, env.CHATGPT_MODEL, context)
-			const json: OpenAI.Response = await response.json()
-			console.log(JSON.stringify(json))
-
-			// reply in Telegram
-			const content = json.choices[0].message.content
-			await Telegram.sendMessage(env.TELEGRAM_BOT_TOKEN, update.message.chat.id, json.choices[0].message.content, {
-				"reply_to_message_id": update.message.message_id,
-				"reply_markup": {
-					"remove_keyboard": true,
-				}
-			})
-
-			// add reply to context
-			if (env.CONTEXT && env.CONTEXT > 0 && env.CHATGPT_TELEGRAM_BOT_KV) {
-				context.push({"role": "assistant", "content": content})
-				await Cloudflare.putKVChatContext(env.CHATGPT_TELEGRAM_BOT_KV, String(update.message.chat.id), context)
-			}
-
-			return new Response(null)
-		} else {
+		if (!request.url.includes(env.TELEGRAM_BOT_TOKEN)) {
 			return new Response(null, {
 				status: 401,
 			})
 		}
+
+		const update: Telegram.Update = await request.json()
+		console.log(JSON.stringify(update))
+
+		// update is not a message
+		if (!("message" in update) || !("text" in update.message)) {
+			return new Response(null) // no action
+		}
+
+		// user is not in whitelist
+		if (env.TELEGRAM_USERNAME_WHITELIST && !env.TELEGRAM_USERNAME_WHITELIST.split(" ").includes(String(update.message.from.username))) {
+			return Telegram.generateSendMessageResponse(env.TELEGRAM_BOT_TOKEN, update.message.chat.id, "You are not whitelisted!")
+		}
+
+		// message starts with /start or /chatgpt
+		if (update.message.text.startsWith("/start") || update.message.text.startsWith("/chatgpt")) {
+			return Telegram.generateSendMessageResponse(env.TELEGRAM_BOT_TOKEN, update.message.chat.id, "Hi @"+ update.message.from.username+"! I'm a chatbot powered by OpenAI! Reply your query to this message!",
+				{
+					"reply_markup": {
+						"force_reply": true,
+						"input_field_placeholder": "Ask me anything!",
+						"selective": true,
+					}
+				}
+			)
+		}
+
+		// message starts with /clear
+		if (update.message.text.startsWith("/clear")) {
+			if (env.CONTEXT && env.CONTEXT > 0 && env.CHATGPT_TELEGRAM_BOT_KV) {
+				await Cloudflare.putKVChatContext(env.CHATGPT_TELEGRAM_BOT_KV, String(update.message.chat.id), [])
+			}
+			return Telegram.generateSendMessageResponse(env.TELEGRAM_BOT_TOKEN, update.message.chat.id, "Context for the current chat (if it existed) has been cleared.", {
+				"reply_markup": {
+					"remove_keyboard": true,
+				}
+			})
+		}
+
+		// retrieve context and truncate to a maximum of (env.CONTEXT * 2)
+		let context: OpenAI.Message[] = []
+		if (env.CONTEXT && env.CONTEXT > 0 && env.CHATGPT_TELEGRAM_BOT_KV) {
+			context = await Cloudflare.getKVChatContext(env.CHATGPT_TELEGRAM_BOT_KV, String(update.message.chat.id))
+		}
+		while (context.length > Math.max(1, env.CONTEXT * 2)) {
+			context.shift()
+		}
+
+		// message starts with /context
+		if (update.message.text.startsWith("/context")) {
+			if (context.length > 0) {
+				return Telegram.generateSendMessageResponse(env.TELEGRAM_BOT_TOKEN, update.message.chat.id, JSON.stringify(context))
+			}
+			return Telegram.generateSendMessageResponse(env.TELEGRAM_BOT_TOKEN, update.message.chat.id, "Context is empty or not available.")
+		}
+
+		// prepare context
+		context.push({"role": "user", "content": update.message.text})
+
+		// query OpenAPI with context
+		const response = await OpenAI.complete(env.OPENAI_API_KEY, env.CHATGPT_MODEL, context)
+		const json: OpenAI.Response = await response.json()
+		console.log(JSON.stringify(json))
+		const content = json.choices[0].message.content
+
+		// add reply to context
+		if (env.CONTEXT && env.CONTEXT > 0 && env.CHATGPT_TELEGRAM_BOT_KV) {
+			context.push({"role": "assistant", "content": content})
+			await Cloudflare.putKVChatContext(env.CHATGPT_TELEGRAM_BOT_KV, String(update.message.chat.id), context)
+		}
+
+		// reply in Telegram
+		return Telegram.generateSendMessageResponse(env.TELEGRAM_BOT_TOKEN, update.message.chat.id, json.choices[0].message.content, {
+			"reply_to_message_id": update.message.message_id,
+			"reply_markup": {
+				"remove_keyboard": true,
+			}
+		})
 	},
 }
