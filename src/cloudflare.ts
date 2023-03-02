@@ -6,6 +6,6 @@ export namespace Cloudflare {
     }
 
     export async function putKVChatContext(kv: KVNamespace, chat_id: string, context: OpenAI.Message[]) {
-        await kv.put(chat_id, JSON.stringify(context))
+        await kv.put(chat_id, JSON.stringify(context).replace("\\n", ""))
     }
 }
