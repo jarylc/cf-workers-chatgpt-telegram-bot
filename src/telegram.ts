@@ -11,6 +11,7 @@ export namespace Telegram {
         date: number
         text: string
         entities: Entity[]
+        reply_to_message?: Message
     }
 
     export interface From {

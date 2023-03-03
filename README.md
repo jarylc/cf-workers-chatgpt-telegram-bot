@@ -9,7 +9,7 @@ Serverless Telegram bot in webhook mode to quickly interface with [OpenAI's Chat
 Note: This is mainly for personal use, if you would like to add features, do fork the repository. Do perform PRs back if you would be so kind!
 
 ## Prerequisites
-- A Cloudflare account with Workers enabled
+- A Cloudflare account with Workers (at least free-tier) enabled
 - The Telegram bot token of a bot created on Telegram via [@BotFather](https://t.me/BotFather)
 - An OpenAI API key that has the ability to use the Chat Completion API
 

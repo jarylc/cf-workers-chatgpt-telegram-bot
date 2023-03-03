@@ -1,6 +1,7 @@
 name = "cf-workers-chatgpt-telegram-bot"
 main = "src/index.ts"
 compatibility_date = "2023-03-02"
+workers_dev = true
 
 kv_namespaces = [
     { binding = "CHATGPT_TELEGRAM_BOT_KV", id = "6a7ab1c53230452382b69cf98493cf18" }
