@@ -16,7 +16,7 @@ export default {
 		request: Request,
 		env: Env,
 	): Promise<Response> {
-		if (!request.url.includes(env.TELEGRAM_BOT_TOKEN)) {
+		if (!request.url.endsWith(env.TELEGRAM_BOT_TOKEN)) {
 			return new Response(null, {
 				status: 401,
 			})
@@ -36,7 +36,7 @@ export default {
 
 		// message starts with /start or /chatgpt
 		if (update.message.text.startsWith("/start") || update.message.text.startsWith("/chatgpt")) {
-			return Telegram.generateSendMessageResponse(env.TELEGRAM_BOT_TOKEN, update.message.chat.id, "COMMAND: Hi @"+ update.message.from.username+"! I'm a chatbot powered by OpenAI! Reply your query to this message!",
+			return Telegram.generateSendMessageResponse(update.message.chat.id, "COMMAND: Hi @"+ update.message.from.username+"! I'm a chatbot powered by OpenAI! Reply your query to this message!",
 				{
 					"reply_markup": {
 						"force_reply": true,
@@ -52,7 +52,7 @@ export default {
 			if (env.CONTEXT && env.CONTEXT > 0 && env.CHATGPT_TELEGRAM_BOT_KV) {
 				await Cloudflare.putKVChatContext(env.CHATGPT_TELEGRAM_BOT_KV, String(update.message.chat.id), [])
 			}
-			return Telegram.generateSendMessageResponse(env.TELEGRAM_BOT_TOKEN, update.message.chat.id, "COMMAND: Context for the current chat (if it existed) has been cleared.", {
+			return Telegram.generateSendMessageResponse(update.message.chat.id, "COMMAND: Context for the current chat (if it existed) has been cleared.", {
 				"reply_markup": {
 					"remove_keyboard": true,
 				}
@@ -80,9 +80,9 @@ export default {
 		// message starts with /context
 		if (update.message.text.startsWith("/context")) {
 			if (context.length > 0) {
-				return Telegram.generateSendMessageResponse(env.TELEGRAM_BOT_TOKEN, update.message.chat.id, JSON.stringify(context))
+				return Telegram.generateSendMessageResponse(update.message.chat.id, JSON.stringify(context))
 			}
-			return Telegram.generateSendMessageResponse(env.TELEGRAM_BOT_TOKEN, update.message.chat.id, "COMMAND: Context is empty or not available.")
+			return Telegram.generateSendMessageResponse(update.message.chat.id, "COMMAND: Context is empty or not available.")
 		}
 
 		// prepare context
@@ -100,7 +100,7 @@ export default {
 		}
 
 		// reply in Telegram
-		return Telegram.generateSendMessageResponse(env.TELEGRAM_BOT_TOKEN, update.message.chat.id, json.choices[0].message.content, {
+		return Telegram.generateSendMessageResponse(update.message.chat.id, json.choices[0].message.content, {
 			"reply_to_message_id": update.message.message_id,
 			"reply_markup": {
 				"remove_keyboard": true,

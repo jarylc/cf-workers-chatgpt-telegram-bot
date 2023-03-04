@@ -8,6 +8,6 @@ kv_namespaces = [
 ]
 
 [vars]
-TELEGRAM_USERNAME_WHITELIST = "jarylc"
+TELEGRAM_USERNAME_WHITELIST = "jarylc Shirleymew"
 CHATGPT_MODEL = "gpt-3.5-turbo-0301"
 CONTEXT = 1

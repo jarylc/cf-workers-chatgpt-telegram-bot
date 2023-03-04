@@ -39,10 +39,10 @@ export namespace Telegram {
         type: string
     }
 
-    export function generateSendMessageResponse(token: string, chat_id: number, text: string, additional_arguments?: { [key: string]: any }): Response {
+    export function generateSendMessageResponse(chatID: number, text: string, additional_arguments?: { [key: string]: any }): Response {
         return new Response(JSON.stringify({
             "method": "sendMessage",
-            "chat_id": chat_id,
+            "chat_id": chatID,
             "parse_mode": "Markdown",
             "text": text,
             ...additional_arguments
