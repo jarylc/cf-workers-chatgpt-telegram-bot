@@ -16,7 +16,7 @@ export default {
 		request: Request,
 		env: Env,
 	): Promise<Response> {
-		if (!request.url.endsWith(env.TELEGRAM_BOT_TOKEN)) {
+		if (request.cf?.asOrganization !== "Telegram Messenger Inc" || !request.url.endsWith(env.TELEGRAM_BOT_TOKEN)) {
 			return new Response(null, {
 				status: 401,
 			})
