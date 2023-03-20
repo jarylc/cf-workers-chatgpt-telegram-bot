@@ -2,7 +2,7 @@
 ![Logo](cf-workers-chatgpt-telegram-bot.png)
 
 ## Description
-![Example](example.png)
+![Example](example.png) ![Example (Inline)](example-inline.png)
 
 Serverless Telegram bot in webhook mode to quickly interface with [OpenAI's Chat Completion API](https://platform.openai.com/docs/guides/chat)
 

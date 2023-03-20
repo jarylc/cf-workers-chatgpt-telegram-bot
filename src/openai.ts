@@ -29,12 +29,6 @@ export namespace OpenAI {
         if (system.trim() != "")
             context.unshift({role: "system", content: system})
 
-        const userHash = Array.from(
-            new Uint8Array(
-                await crypto.subtle.digest({name: 'SHA-256'}, new TextEncoder().encode(user))
-            )
-        ).map((b) => b.toString(16).padStart(2, "0")).join("")
-
         return fetch("https://api.openai.com/v1/chat/completions", {
             method: "POST",
             headers: {
@@ -43,7 +37,7 @@ export namespace OpenAI {
             },
             body: JSON.stringify({
                 "model": model ? model : "gpt-3.5-turbo",
-                "user": userHash,
+                "user": user,
                 "messages": context
             })
         })
