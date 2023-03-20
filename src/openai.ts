@@ -29,7 +29,13 @@ export namespace OpenAI {
         if (system.trim() != "")
             context.unshift({role: "system", content: system})
 
-        return fetch("https://api.openai.com/v1/chat/completions", {
+        const userHash = Array.from(
+            new Uint8Array(
+                await crypto.subtle.digest({name: 'SHA-256'}, new TextEncoder().encode(user))
+            )
+        ).map((b) => b.toString(16).padStart(2, "0")).join("")
+
+        const response = await fetch("https://api.openai.com/v1/chat/completions", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -37,9 +43,11 @@ export namespace OpenAI {
             },
             body: JSON.stringify({
                 "model": model ? model : "gpt-3.5-turbo",
-                "user": user,
+                "user": userHash,
                 "messages": context
             })
         })
+        const json: OpenAI.Response = await response.json()
+        return json.choices[0].message.content.trim()
     }
 }

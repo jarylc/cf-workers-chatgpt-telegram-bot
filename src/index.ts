@@ -16,6 +16,7 @@ export default {
 	async fetch(
 		request: Request,
 		env: Env,
+		ctx: ExecutionContext,
 	): Promise<Response> {
 		if (request.cf?.asOrganization !== "Telegram Messenger Inc" || !request.url.endsWith(env.TELEGRAM_BOT_TOKEN)) {
 			return new Response(null, {
@@ -111,31 +112,32 @@ export default {
 		// prepare context
 		context.push({"role": "user", "content": query})
 
-		// query OpenAPI with context
-		const response = await OpenAI.complete(env.OPENAI_API_KEY, env.CHATGPT_MODEL, env.CHATGPT_BEHAVIOR, `tg_${username}`, context)
-		const json: OpenAI.Response = await response.json()
-		const content = json.choices[0].message.content.trim()
-
-		// reply in Telegram if message
 		if (update.message) {
+			// query OpenAPI with context
+			const content = await OpenAI.complete(env.OPENAI_API_KEY, env.CHATGPT_MODEL, env.CHATGPT_BEHAVIOR, `tg_${username}`, context)
+
 			// save reply to context
 			if (update.message && env.CONTEXT && env.CONTEXT > 0 && env.CHATGPT_TELEGRAM_BOT_KV) {
 				context.push({"role": "assistant", "content": content})
 				await Cloudflare.putKVChatContext(env.CHATGPT_TELEGRAM_BOT_KV, update.message.chat.id, context)
 			}
 
-			return Telegram.generateSendMessageResponse(update.message.chat.id, json.choices[0].message.content, {
+			return Telegram.generateSendMessageResponse(update.message.chat.id, content, {
 				"reply_to_message_id": update.message.message_id,
 				"reply_markup": {
 					"remove_keyboard": true,
 				}
 			})
-		}
+		} else if (update.callback_query) {
+			const callbackQuery = update.callback_query
+			ctx.waitUntil(new Promise(async _ => {
+				// query OpenAPI with context
+				const content = await OpenAI.complete(env.OPENAI_API_KEY, env.CHATGPT_MODEL, env.CHATGPT_BEHAVIOR, `tg_${username}`, context)
 
-		// edit inline query response message if callback query
-		if (update.callback_query) {
-			await Telegram.sendEditInlineMessageText(env.TELEGRAM_BOT_TOKEN, update.callback_query.inline_message_id, query, content)
-			return Telegram.generateAnswerCallbackQueryResponse(update.callback_query.id)
+				// edit message with reply
+				await Telegram.sendEditInlineMessageText(env.TELEGRAM_BOT_TOKEN, callbackQuery.inline_message_id, query, content)
+			}))
+			return Telegram.generateAnswerCallbackQueryResponse(callbackQuery.id)
 		}
 
 		// other update
