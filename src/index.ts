@@ -8,6 +8,7 @@ export interface Env {
 	TELEGRAM_USERNAME_WHITELIST: string
 	OPENAI_API_KEY: string
 	CHATGPT_MODEL: string
+	CHATGPT_BEHAVIOR: string
 	CONTEXT: number
 }
 
@@ -111,7 +112,7 @@ export default {
 		context.push({"role": "user", "content": query})
 
 		// query OpenAPI with context
-		const response = await OpenAI.complete(env.OPENAI_API_KEY, env.CHATGPT_MODEL, context)
+		const response = await OpenAI.complete(env.OPENAI_API_KEY, env.CHATGPT_MODEL, env.CHATGPT_BEHAVIOR, `tg_${username}`, context)
 		const json: OpenAI.Response = await response.json()
 		const content = json.choices[0].message.content.trim()
 
