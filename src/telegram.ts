@@ -76,7 +76,7 @@ export namespace Telegram {
         return new Response(JSON.stringify({
             "method": "answerCallbackQuery",
             "callback_query_id": callbackQueryID,
-            "text": "ChatGPT has responded",
+            "text": "ChatGPT is processing your query",
         }), {
             headers: {
                 "content-type": "application/json",
