@@ -47,7 +47,7 @@ export namespace Telegram {
                     "id": inlineQueryID,
                     "title": "Query ChatGPT",
                     "input_message_content": {
-                        "message_text": `Query:\n\`\`\`\n${text}\n\`\`\``,
+                        "message_text": `Query: ${text}`,
                         "parse_mode": "Markdown",
                     },
                     "reply_markup": {
@@ -92,7 +92,7 @@ export namespace Telegram {
             },
             body: JSON.stringify({
                 "inline_message_id": inlineMessageID,
-                "text": `Query: \`\`\`\n${query}\n\`\`\`\nAnswer: \n${sanitize(response)}`,
+                "text": `Query: ${query}\n\nAnswer:\n${sanitize(response)}`,
                 "parse_mode": "Markdown",
             }),
         })
