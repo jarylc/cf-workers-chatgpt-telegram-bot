@@ -116,14 +116,21 @@ export namespace Telegram {
         const split = text.split(/(```.*)/g)
         let inCodeBlock = false;
         for (const i in split) {
-            if (split[i].startsWith("```")) {
+            const line = split[i]
+            if (line.startsWith("```")) {
                 inCodeBlock = !inCodeBlock
                 continue
             }
             if (!inCodeBlock) {
-                split[i] = split[i].replace("_", "\\_")
-                    .replace("*", "\\*")
-                    .replace("[", "\\[");
+                if (line.startsWith("`") && line.endsWith("`")) {
+                    continue
+                }
+                split[i] = line.replaceAll("_", "\\_")
+                    .replaceAll("*", "\\*")
+                    .replaceAll("[", "｢")
+                    .replaceAll("]", "｣")
+                    .replaceAll("(", "❨")
+                    .replaceAll(")", "❩")
             }
         }
         return split.join("")
