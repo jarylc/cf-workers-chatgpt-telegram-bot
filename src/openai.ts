@@ -25,7 +25,12 @@ export namespace OpenAI {
         total_tokens:      number;
     }
 
-    export async function complete(api_key: string, model: string, system: string, user: string, context: Message[]) {
+    export async function oai_complete(
+        api_key: string, 
+        model: string, 
+        system: string, 
+        user: string, 
+        context: Message[]) {
         if (system.trim() != "")
             context.unshift({role: "system", content: system})
 
@@ -43,6 +48,38 @@ export namespace OpenAI {
             },
             body: JSON.stringify({
                 "model": model ? model : "gpt-3.5-turbo",
+                "user": userHash,
+                "messages": context
+            })
+        })
+        const json: OpenAI.Response = await response.json()
+        return json.choices[0].message.content.trim()
+    }
+
+    export async function aoai_complete(
+        api_key: string, 
+        resource_name: string, 
+        deployment_name: string, 
+        api_version: string, 
+        system: string, 
+        user: string, 
+        context: Message[]) {
+        if (system.trim() != "")
+            context.unshift({role: "system", content: system})
+
+        const userHash = Array.from(
+            new Uint8Array(
+                await crypto.subtle.digest({name: 'SHA-256'}, new TextEncoder().encode(user))
+            )
+        ).map((b) => b.toString(16).padStart(2, "0")).join("")
+
+        const response = await fetch(`https://${resource_name}.openai.azure.com/openai/deployments/${deployment_name}/chat/completions?api-version=${api_version}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Api-Key": api_key,
+            },
+            body: JSON.stringify({
                 "user": userHash,
                 "messages": context
             })

@@ -2,13 +2,29 @@ import {OpenAI} from "./openai"
 import {Telegram} from "./telegram"
 import {Cloudflare} from "./cloudflare"
 
-export interface Env {
+export enum ServiceType {
+    OAI = 1,
+    AOAI = 2
+}
+
+export interface OAIEnv {
+    OAI_API_KEY: string
+	OAI_CHATGPT_MODEL: string
+}
+
+export interface AOAIEnv {
+    AOAI_API_KEY: string
+    AOAI_RESOURCE_NAME: string
+    AOAI_DEPLOYMENT_NAME: string
+    AOAI_API_VERSION: string
+}
+
+export interface Env extends OAIEnv, AOAIEnv {
 	CHATGPT_TELEGRAM_BOT_KV: KVNamespace
 	TELEGRAM_BOT_TOKEN: string
 	TELEGRAM_USERNAME_WHITELIST: string
-	OPENAI_API_KEY: string
-	CHATGPT_MODEL: string
 	CHATGPT_BEHAVIOR: string
+    SERVICE_TYPE: ServiceType
 	CONTEXT: number
 }
 
@@ -114,7 +130,28 @@ export default {
 
 		if (update.message) {
 			// query OpenAPI with context
-			const content = await OpenAI.complete(env.OPENAI_API_KEY, env.CHATGPT_MODEL, env.CHATGPT_BEHAVIOR, `tg_${username}`, context)
+            const content = await (async () => {
+                switch (env.SERVICE_TYPE) {
+                    case ServiceType.OAI:
+                        return OpenAI.oai_complete(
+                            env.OAI_API_KEY, 
+                            env.OAI_CHATGPT_MODEL, 
+                            env.CHATGPT_BEHAVIOR, 
+                            `tg_${username}`, 
+                            context)
+                    case ServiceType.AOAI:
+                        return OpenAI.aoai_complete(
+                            env.AOAI_API_KEY, 
+                            env.AOAI_RESOURCE_NAME, 
+                            env.AOAI_DEPLOYMENT_NAME, 
+                            env.AOAI_API_VERSION, 
+                            env.CHATGPT_BEHAVIOR, 
+                            `tg_${username}`, 
+                            context)
+                    default:
+                        throw new Error("Invalid service type")
+                }
+            })();
 
 			// save reply to context
 			if (update.message && env.CONTEXT && env.CONTEXT > 0 && env.CHATGPT_TELEGRAM_BOT_KV) {
@@ -132,7 +169,28 @@ export default {
 			const callbackQuery = update.callback_query
 			ctx.waitUntil(new Promise(async _ => {
 				// query OpenAPI with context
-				const content = await OpenAI.complete(env.OPENAI_API_KEY, env.CHATGPT_MODEL, env.CHATGPT_BEHAVIOR, `tg_${username}`, context)
+                const content = await (async () => {
+                    switch (env.SERVICE_TYPE) {
+                        case ServiceType.OAI:
+                            return OpenAI.oai_complete(
+                                env.OAI_API_KEY, 
+                                env.OAI_CHATGPT_MODEL, 
+                                env.CHATGPT_BEHAVIOR, 
+                                `tg_${username}`, 
+                                context)
+                        case ServiceType.AOAI:
+                            return OpenAI.aoai_complete(
+                                env.AOAI_API_KEY, 
+                                env.AOAI_RESOURCE_NAME, 
+                                env.AOAI_DEPLOYMENT_NAME, 
+                                env.AOAI_API_VERSION, 
+                                env.CHATGPT_BEHAVIOR, 
+                                `tg_${username}`, 
+                                context)
+                        default:
+                            throw new Error("Invalid service type")
+                    }
+                })();
 
 				// edit message with reply
 				await Telegram.sendEditInlineMessageText(env.TELEGRAM_BOT_TOKEN, callbackQuery.inline_message_id, query, content)

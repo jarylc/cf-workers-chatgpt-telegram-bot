@@ -9,6 +9,13 @@ kv_namespaces = [
 
 [vars]
 TELEGRAM_USERNAME_WHITELIST = "jarylc Shirleymew"
-CHATGPT_MODEL = "gpt-3.5-turbo"
 CHATGPT_BEHAVIOR = "Short, concise and accurate answers only"
 CONTEXT = 1
+
+SERVICE_TYPE = 1
+OAI_API_KEY = ""
+OAI_CHATGPT_MODEL = "gpt-3.5-turbo"
+AOAI_API_KEY = ""
+AOAI_RESOURCE_NAME = ""
+AOAI_DEPLOYMENT_NAME = ""
+AOAI_API_VERSION = ""
