@@ -39,3 +39,6 @@ chatgpt - Triggers use of the bot in group chats without toggling Private Mode
 context - Shows stored context for the current chat
 clear - Clears the stored context for the current chat and any ForceReply messages
 ```
+
+## Notable forks
+- [SingularTnT's fork with Azure OpenAI's Chat Completion API support](https://github.com/SingularTnT/cf-workers-chatgpt-telegram-bot/tree/dev/mfj/040501)
