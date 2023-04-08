@@ -9,7 +9,7 @@ Serverless Telegram bot in webhook mode to quickly interface with [OpenAI's Chat
 This bot supports private chats, group chats and inline mode (tagging the bot in any chat with a query) with a confirmation button so as you don't consume tokens live.
 
 Notes:
-- Inline mode has been developed deliberately to not support using context KV even though it should technically be possible
+- To clear or list Inline Mode context, tag the bot in chat without a query and tap on the appropriate button
 - Inline mode is capped at a 64-character limit because of `callback_data` limits, but it can be solved by saving the query in KV if required
 - This is mainly for personal use, if you would like to add features, do fork the repository. Do perform PRs back if you would be so kind!
 

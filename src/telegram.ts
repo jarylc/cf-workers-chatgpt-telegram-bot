@@ -60,7 +60,7 @@ export namespace Telegram {
                             ]
                         ]
                     },
-                    "description": "Send your query to ChatGPT (64 character limit, no context)",
+                    "description": "Send your query to ChatGPT (64 character limit)",
                     "thumb_url": "https://raw.githubusercontent.com/jarylc/cf-workers-chatgpt-telegram-bot/master/cf-workers-chatgpt-telegram-bot.png"
                 },
             ],
@@ -72,11 +72,55 @@ export namespace Telegram {
         })
     }
 
-    export function generateAnswerCallbackQueryResponse(callbackQueryID: string): Response {
+    export function generateAnswerInlineQueryResponseEmpty(inlineQueryID: string): Response {
         return new Response(JSON.stringify({
-            "method": "answerCallbackQuery",
-            "callback_query_id": callbackQueryID,
-            "text": "ChatGPT is processing your query",
+            "method": "answerInlineQuery",
+            "inline_query_id": inlineQueryID,
+            "results": [
+                {
+                    "type": "article",
+                    "id": inlineQueryID + "_clear",
+                    "title": "Clear context",
+                    "input_message_content": {
+                        "message_text": `Clear current chat's context?`,
+                        "parse_mode": "Markdown",
+                    },
+                    "reply_markup": {
+                        "inline_keyboard": [
+                            [
+                                {
+                                    "text": "Confirm?",
+                                    "callback_data": "/clear"
+                                }
+                            ]
+                        ]
+                    },
+                    "description": "Clear context",
+                    "thumb_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fd/Broom_icon_1.svg/240px-Broom_icon_1.svg.png"
+                },
+                {
+                    "type": "article",
+                    "id": inlineQueryID + "_list",
+                    "title": "Show context",
+                    "input_message_content": {
+                        "message_text": `Show current chat's context?`,
+                        "parse_mode": "Markdown",
+                    },
+                    "reply_markup": {
+                        "inline_keyboard": [
+                            [
+                                {
+                                    "text": "Confirm?",
+                                    "callback_data": "/context"
+                                }
+                            ]
+                        ]
+                    },
+                    "description": "Show context",
+                    "thumb_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/WikiProject_Council_project_list_icon.svg/266px-WikiProject_Council_project_list_icon.svg.png"
+                },
+            ],
+            "is_personal": true,
         }), {
             headers: {
                 "content-type": "application/json",
@@ -84,7 +128,19 @@ export namespace Telegram {
         })
     }
 
-    export async function sendEditInlineMessageText(token: string, inlineMessageID: string, query: string, response: string): Promise<Response> {
+    export function generateAnswerCallbackQueryResponse(callbackQueryID: string, text: string): Response {
+        return new Response(JSON.stringify({
+            "method": "answerCallbackQuery",
+            "callback_query_id": callbackQueryID,
+            "text": text,
+        }), {
+            headers: {
+                "content-type": "application/json",
+            }
+        })
+    }
+
+    export async function sendEditInlineMessageText(token: string, inlineMessageID: string, text: string): Promise<Response> {
         return fetch(`https://api.telegram.org/bot${token}/editMessageText`, {
             method: "POST",
             headers: {
@@ -92,7 +148,7 @@ export namespace Telegram {
             },
             body: JSON.stringify({
                 "inline_message_id": inlineMessageID,
-                "text": `Query: ${query}\n\nAnswer:\n${sanitize(response)}`,
+                "text": text,
                 "parse_mode": "Markdown",
             }),
         })
