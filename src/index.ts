@@ -111,7 +111,7 @@ export default {
 				await Telegram.sendEditInlineMessageText(env.TELEGRAM_BOT_TOKEN, update.callback_query.inline_message_id, content)
 				return Telegram.generateAnswerCallbackQueryResponse(update.callback_query.id, content)
 			}
-			return Telegram.generateSendMessageResponse(chatID, "COMMAND: Context is empty or not available.")
+			return Telegram.generateSendMessageResponse(chatID, content)
 		}
 
 		// truncate context to a maximum of (env.CONTEXT * 2)
